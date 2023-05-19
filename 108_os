@@ -1,0 +1,68 @@
+Consider the mechanisms needed to support a system call.
+
+(a) Normally, a TRAP instruction is used to make a system call. Explain the steps involved in making a system call.
+(b) How does the OS know which system call is being made?
+(c) Explain why a subroutine CALL/RETURN instruction can not be used to make/return from a system call.
+(a)
+1. Push parameters on stack.
+2. Invoke the system call.
+3. Put code for system call on register.
+4. Trap to the kernel
+5. Since a number is associated with each system call, system call interface invokes/dispatch intended system call in OS kernel and return status of the system call and any return value.
+6. Increment stack pointer.
+(b) Using a cause register and OS can check that with the interrupt vector.
+(c) Because the returned process will be executed in kernel mode.
+(a)
+將參數壓入堆疊。
+呼叫系統呼叫。
+在寄存器中放置系統呼叫的程式碼。
+進行系統陷阱（TRAP），轉至核心（kernel）。
+由於每個系統呼叫都與一個數字相關聯，系統呼叫介面在作業系統核心中調用/分派所需的系統呼叫並返回系統呼叫的狀態和任何返回值。
+增加堆疊指標。
+(b) 透過一個原因（cause）寄存器，作業系統可以檢查該寄存器以辨識所執行的系統呼叫。
+
+(c) 因為返回的過程將在核心模式（kernel mode）下執行，而一般的子程式CALL/RETURN指令無法達到這個目的。
+Consider process scheduling algorithms FCFS (first-come first-serve), SJF (shortest-job first), and Round-Robin (RR). Each one may be preemptive or nonpreemptive.
+
+(a) Which algorithm(s) can potentially cause starvation? Explain by describing a scenario. Be sure to state whether preemptive or nonpreemptive.
+(b) Which two of the six algorithms (preemptive or nonpreemptive FCFS, SJF, and RR) are essentially the same? Why?
+(a) SJF is nonpreemptive and may cause starvation. For example: A short job comes into the ready queue before the current running job is finished, then when the running job is finished, the short job will be executed before those jobs that are already in the ready queue.
+(b) Preemptive FCFS and nonpreemptive FCFS are the same, because no matter preemptive or nonpreemptive, that’s not going to change the arrival time, and FCFS only see the arrival time as the dispatch order.
+(a) SJF (最短作業優先)算法在非抢占式情况下有潜在的导致饥饿的可能性。这种情况发生在一个长时间运行的进程首先到达并占用了CPU，导致较短的进程无法执行。由于SJF算法总是选择下一个最短的作业，较长的进程将继续独占CPU，导致等待队列中的较短进程发生饥饿。
+
+情景描述:
+假设有三个进程：P1、P2和P3。P1是一个长时间运行的进程，P2和P3是较短的进程。如果采用非抢占式的SJF算法，当P1首先到达并开始执行时，P2和P3将被阻塞等待。由于P1的运行时间较长，P2和P3将一直无法获得CPU时间片，从而导致它们发生饥饿现象。
+饥饿（Starvation）是指在进程调度中，某个进程无法获得所需的系统资源或执行机会，导致它无法继续执行或长时间处于等待状态的情况。这种情况下，进程无法按照预期的时间获得处理器时间片或其他所需的资源，从而导致进程无法正常执行。
+
+饥饿可能发生在多种情况下，包括进程调度算法不公平、资源分配不合理或竞争条件等。当一个进程无法获得所需的资源或执行机会时，它可能会长时间地等待，而其他进程却得到了更多的资源或执行机会。这种不公平的分配使得受饥饿影响的进程无法正常执行，导致其无法完成工作或无法及时响应。
+在SJF（最短作业优先）算法的抢占式版本中，当一个短作业进入就绪队列并具备执行条件时，它会立即抢占正在执行的作业，使得短作业能够立即执行。这种抢占式行为确保了短作业能够及时得到执行，避免了长作业长时间占据CPU资源而导致其他作业饥饿的情况。
+
+由于SJF算法抢占式版本会不断选择执行最短的作业，因此长作业在执行时可能会被短作业抢占，这样即使有长作业存在，它们也不会一直占据CPU资源，从而避免了饥饿的发生。
+
+需要注意的是，抢占式的SJF算法并不完全消除饥饿的可能性，因为如果一直有短作业不断进入就绪队列，长作业可能会在不断被抢占的情况下一直等待。但相对于非抢占式的SJF算法，抢占式版本更容易避免饥饿现象的发生，因为它允许及时响应短作业，提高了资源的利用效率和作业的响应时间。
+
+饥饿的存在可能会影响系统的性能和效率，因为受饥饿影响的进程无法按时完成任务，导致系统资源得不到充分利用。为了避免饥饿现象的发生，需要采用合适的调度算法和资源管理策略，确保公平地分配系统资源和执行机会，以满足不同进程的需求。
+Consider a semaphore API where semaphore S(n) declares a semaphore named S initialized to the integer n, and functions wait(S) and signal(S) can be invoked on the semaphore.
+
+(a) Show how to declare a semaphore L so that it works like a lock (mutex). How can acquire(L) and release(L) be implemented?
+(b) Show how a semaphore can be used to ensure precedence (statement S1 of process P1 executes before statement S2 of process P2). Your pseudocode should declare a semaphore x and add the appropriate signal(x) or wait(x) call before or after statement S1 of P1 or S2 of P2.
+semaphore L: 1
+
+acquire(L) {
+    wait(L);
+}
+
+release(L) {
+    signal(L);
+}
+semaphore x: 0
+
+------------------------------
+
+    P1           P2
+
+    S1         wait(x);
+
+ signal(x);      S2
+ 
+ ------------------------------
